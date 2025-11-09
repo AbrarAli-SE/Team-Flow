@@ -1,17 +1,16 @@
+"use client";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "../../../../components/ui/button";
-import { cn } from "../../../../lib/utils";
-
-const workspaces = [
-  { id: 1, name: "Organization One", avatar: "OO" },
-  { id: 2, name: "Organization Two", avatar: "OT" },
-  { id: 3, name: "Organization Three", avatar: "OT" },
-];
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
+import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components";
 
 const colorCombinations = [
   "bg-red-500 hover:bg-red-600 text-white",
@@ -24,34 +23,48 @@ const colorCombinations = [
   "bg-gray-500 hover:bg-gray-600 text-white",
 ];
 
-
-const getWorkspaceColor = (id:string) => {
-    const charSum = id
-      .split("")
-      .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return colorCombinations[charSum % colorCombinations.length];
-  }
-
+const getWorkspaceColor = (id: string) => {
+  const charSum = id
+    .split("")
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return colorCombinations[charSum % colorCombinations.length];
+};
 
 export function WorkspaceList() {
+  const {
+    data: { workspaces, currentWorkspace },
+  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
+
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-2">
-        {workspaces.map((ws) => (
-          <Tooltip key={ws.id}>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                className={cn('size-12 transition-all duration-200', getWorkspaceColor(ws.id.toString()))}
-              >
-                <span className="text-sm font-semibold">{ws.avatar}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-                <p>{ws.name}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
+        {workspaces.map((ws) => {
+          const isActive = currentWorkspace.orgCode === ws.id;
+
+          return (
+            <Tooltip key={ws.id}>
+              <TooltipTrigger asChild>
+                <LoginLink orgCode={ws.id}>
+                <Button
+                  size="icon"
+                  className={cn(
+                    "size-12 transition-all duration-200",
+                    getWorkspaceColor(ws.id.toString()),
+                    isActive ? "rounded-lg" : "rounded-xl hover:rounded-lg"
+                  )}
+                >
+                  <span className="text-sm font-semibold">{ws.avatar} </span>
+                </Button>
+                </LoginLink>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>
+                  {ws.name} {isActive && "(Current)"}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </div>
     </TooltipProvider>
   );

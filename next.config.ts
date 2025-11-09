@@ -1,12 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // outside image integrate
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ik.imagekit.io",
+        hostname: "lh3.googleusercontent.com", // Google user images
+      },
+      {
+        protocol: "https", 
+        hostname: "avatars.githubusercontent.com", // GitHub avatars
+      },
+      {
+        protocol: "https",
+        hostname: "avatar.vercel.sh", // Vercel avatars
       },
     ],
   },
