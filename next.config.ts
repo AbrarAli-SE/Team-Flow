@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "avatar.vercel.sh", // Vercel avatars
       },
+      {
+        protocol: "https",
+        hostname: "randomuser.me", // Random user images
+      }
     ],
   },
 };
