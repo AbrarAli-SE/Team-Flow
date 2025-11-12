@@ -3,7 +3,7 @@ import React from 'react'
 const WorkspaceidPage = () => {
   return (
     <div>
-      WorkspaceidPage
+      {/* WorkspaceidPage */}
     </div>
   )
 }
