@@ -1,4 +1,5 @@
 import { ChannelHeader } from "./_components/ChannelHeader";
+import { MessageInputForm } from "./_components/message/MessageInputForm";
 import { MessagesList } from "./_components/MessagesList";
 
 const ChannelPageMain = () => {
@@ -11,14 +12,15 @@ const ChannelPageMain = () => {
         <ChannelHeader />
 
         {/* {scroll able messages Area} */}
-      <div className=" flex-1 overflow-hidden mb-4">
-        <MessagesList />
-      </div>
+        <div className=" flex-1 overflow-hidden mb-4">
+          <MessagesList />
+        </div>
 
-      
+        {/* {fixed input} */}
+        <div className="border-t bg-background p-4">
+          <MessageInputForm />
+        </div>
       </div>
-
-      
     </div>
   );
 };
