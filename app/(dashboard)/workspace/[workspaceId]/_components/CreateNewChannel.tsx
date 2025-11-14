@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { use, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -28,11 +28,14 @@ import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 import { isDefinedError } from "@orpc/client";
 import { Spinner } from "@/components/ui/spinner";
+import { useParams, useRouter } from "next/navigation";
 
 export function CreateNewChannel() {
   const [open, setOpen] = useState(false);
 
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const {workspaceId} = useParams<{ workspaceId: string }>();
 
   const form = useForm({
     resolver: zodResolver(ChannelNameSchema),
@@ -50,6 +53,8 @@ export function CreateNewChannel() {
 
         form.reset();
         setOpen(false);
+
+        router.push(`/workspace/${workspaceId}/channel/${newChannel.id}`);
       },
       onError: (error) => {
         if (isDefinedError(error)) {
