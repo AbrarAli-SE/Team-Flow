@@ -6,17 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { MessageComposer } from "./MessageComposer";
 import { useMutation } from "@tanstack/react-query";
-import { orpc } from "../../../../../../../../lib/orpc";
+import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
-
 
 interface iAppProps {
     channelId: string;
 }
 
 export function MessageInputForm({ channelId } : iAppProps) {
-
-    const form  = useForm({
+    const form = useForm({
         resolver: zodResolver(createMessageSchema),
         defaultValues: {    
             channelId: channelId,
@@ -27,10 +25,11 @@ export function MessageInputForm({ channelId } : iAppProps) {
     const createMessageMutation = useMutation(
         orpc.message.create.mutationOptions({
             onSuccess: () => {
-                return toast.success("Message sent Successfully");
+                toast.success("Message sent successfully");
+                form.reset(); 
             },
             onError: () => {
-                return toast.error("Error sending message");
+                toast.error("Error sending message");
             }
         })
     )
@@ -38,6 +37,9 @@ export function MessageInputForm({ channelId } : iAppProps) {
     function onSubmit(data: CreateMessageSchemaType) {
         createMessageMutation.mutate(data);
     }
+
+    // Get the form's submitting state
+    const isSubmitting = form.formState.isSubmitting || createMessageMutation.isPending;
 
     return (
         <Form {...form}>
@@ -48,7 +50,12 @@ export function MessageInputForm({ channelId } : iAppProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormControl>
-                                <MessageComposer value={field.value} onChange={field.onChange} onSubmit={() => onSubmit(form.getValues())} />
+                                <MessageComposer 
+                                    value={field.value} 
+                                    onChange={field.onChange} 
+                                    onSubmit={form.handleSubmit(onSubmit)}
+                                    isSubmitting={isSubmitting}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
