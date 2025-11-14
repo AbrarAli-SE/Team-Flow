@@ -1,31 +1,93 @@
-import { MessageItem } from "./message/MessageItem";
+"use client";
 
-const messages = [
-    {
-        id: 1,
-        message: "Hello, how are you?",
-        date: new Date(),
-        avatar:'https://randomuser.me/api/portraits/men/1.jpg',
-        userName: "John Doe",
-    },
-    {
-        id: 2,
-        message: "I'm good, thanks! How about you?",
-        date: new Date(),
-        avatar:'https://randomuser.me/api/portraits/women/2.jpg',
-        userName: "Jane Smith",
-    }
-];
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { MessageItem } from "./message/MessageItem";
+import { orpc } from "@/lib/orpc";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export function MessagesList() {
-    return (
-        <div className="relative h-full">
-            <div className="h-full overflow-y-auto px-4">
-                {/* Messages will be rendered here */}
-                {messages.map((msg) => (
-                    <MessageItem  key={msg.id} {...msg} />
-                ))}
-            </div>
-        </div>
-    )
+  const { channelId } = useParams<{ channelId: string }>();
+  const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const infiniteOptions = orpc.message.list.infiniteOptions({
+    input: (pageParam: string | undefined) => ({
+      channelId: channelId,
+      cursor: pageParam,
+      limit: 8
+    }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    select: (data) => ({
+      pages: [...data.pages].map((p) => ({
+        ...p,
+        items: [...p.items].reverse(),
+      })).reverse(),
+      pageParams: [...data.pageParams].reverse(),
+    }),
+  });
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    isLoading,
+    error,
+  } = useInfiniteQuery({
+    ...infiniteOptions,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (!hasInitialScrolled && data?.pages.length) {
+      const element = scrollRef.current;
+      if (element) {
+        element.scrollTop = element.scrollHeight;
+        setHasInitialScrolled(true);
+      }
+    }
+  }, [hasInitialScrolled, data?.pages.length]);
+
+  const handleScroll = () => {
+    const element = scrollRef.current;
+
+    if (!element) return;
+
+    if (element.scrollTop <= 80 && hasNextPage && !isFetching) {
+      const prevScrollHeight = element.scrollHeight;
+      const prevScrollTop = element.scrollTop;
+      fetchNextPage().then(() => {
+        const newScrollHeight = element.scrollHeight;
+        element.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
+      });
+    }
+  };
+
+  const items = useMemo(() => {
+    return data?.pages.flatMap((page) => page.items) ?? [];
+  }, [data]);
+
+  return (
+    <div className="relative h-full">
+      <div 
+        className="h-full overflow-y-auto px-4" 
+        ref={scrollRef}
+        onScroll={handleScroll} // Add this line
+      >
+        {/* Messages will be rendered here */}
+        {items?.map((msg) => (
+          <MessageItem key={msg.id} message={msg} />
+        ))}
+        {isFetching && !isFetchingNextPage ? (
+          <div className="py-2 text-center text-sm text-muted-foreground">
+            Fetching...
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 }
