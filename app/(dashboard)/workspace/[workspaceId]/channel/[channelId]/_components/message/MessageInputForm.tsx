@@ -5,7 +5,7 @@ import { createMessageSchema, CreateMessageSchemaType } from "@/app/schemas/mess
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { MessageComposer } from "./MessageComposer";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 
@@ -14,6 +14,9 @@ interface iAppProps {
 }
 
 export function MessageInputForm({ channelId } : iAppProps) {
+
+    const queryClient = useQueryClient();
+
     const form = useForm({
         resolver: zodResolver(createMessageSchema),
         defaultValues: {    
@@ -25,21 +28,21 @@ export function MessageInputForm({ channelId } : iAppProps) {
     const createMessageMutation = useMutation(
         orpc.message.create.mutationOptions({
             onSuccess: () => {
+                queryClient.invalidateQueries({
+                    queryKey: orpc.message.list.key(),
+                })
+                form.reset();
                 toast.success("Message sent successfully");
-                form.reset(); 
             },
             onError: () => {
                 toast.error("Error sending message");
             }
         })
-    )
-
+    );
+    
     function onSubmit(data: CreateMessageSchemaType) {
         createMessageMutation.mutate(data);
     }
-
-    // Get the form's submitting state
-    const isSubmitting = form.formState.isSubmitting || createMessageMutation.isPending;
 
     return (
         <Form {...form}>
@@ -54,7 +57,7 @@ export function MessageInputForm({ channelId } : iAppProps) {
                                     value={field.value} 
                                     onChange={field.onChange} 
                                     onSubmit={form.handleSubmit(onSubmit)}
-                                    isSubmitting={isSubmitting}
+                                    isSubmitting={createMessageMutation.isPending}
                                 />
                             </FormControl>
                             <FormMessage />
