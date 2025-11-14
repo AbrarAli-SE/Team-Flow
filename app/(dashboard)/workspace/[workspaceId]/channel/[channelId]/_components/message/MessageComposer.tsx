@@ -1,7 +1,7 @@
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
-import { Button } from "../../../../../../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { ImageIcon, Send } from "lucide-react";
-import { Spinner } from "../../../../../../../../components/ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface iAppProps {
   value: string;
@@ -32,7 +32,10 @@ export function MessageComposer({
                 <Spinner /> Sending...
               </>
             ) : (
-              "Send"
+              <>
+                <Send className="size-4 mr-1" />
+                Send
+              </>
             )}
           </Button>
         }
