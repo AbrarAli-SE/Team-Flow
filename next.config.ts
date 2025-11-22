@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "randomuser.me", // Random user images
+      },
+      {
+        protocol: "https",
+        hostname: "01mglxi4x0.ufs.sh" // Uploadthing CDN
       }
     ],
   },
