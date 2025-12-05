@@ -36,7 +36,7 @@ export function MessageItem({ message }: iAppProps) {
                             alt="Message attachment"
                             width={512}
                             height={512}
-                            className="rounded-md max-h-[320px] w-auto object-contain"
+                            className="rounded-md max-h-80 w-auto object-contain"
                         />
                     </div>
                 )}

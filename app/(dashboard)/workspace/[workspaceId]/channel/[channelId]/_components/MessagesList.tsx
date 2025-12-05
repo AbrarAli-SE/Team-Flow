@@ -15,7 +15,6 @@ export function MessagesList() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [newMessages, setNewMessages] = useState(false);
   const lastItemIdRef = useRef<string | undefined>(undefined);
 
   const infiniteOptions = orpc.message.list.infiniteOptions({
@@ -153,11 +152,8 @@ export function MessagesList() {
           element.scrollTop = element.scrollHeight;
         });
 
-        setNewMessages(false);
         setIsAtBottom(true);
-      } else {
-        setNewMessages(true);
-      }
+      } 
     }
 
     lastItemIdRef.current = lastItemId;
@@ -169,7 +165,6 @@ export function MessagesList() {
 
     bottomRef.current?.scrollIntoView({ block: "end" });
 
-    setNewMessages(false);
     setIsAtBottom(true);
   }
 
@@ -201,7 +196,7 @@ export function MessagesList() {
         isFetchingNextPage && (
           <div className="pointer-events-none absolute top-0 left-0 right-0 z-20
           flex justify-center items-center py-2">
-            <div className="flex items-center gap-2 rounded-md  bg-gradient-to-b 
+            <div className="flex items-center gap-2 rounded-md  bg-linear-to-b 
             from-white/80 to-transparent dark:from-neutral-900/80 backdrop-blur px-3 py-1">
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
               <span> Loading Previous Messages...</span>

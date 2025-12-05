@@ -5,23 +5,23 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com", // Google user images
+        hostname: "lh3.googleusercontent.com",
       },
       {
         protocol: "https", 
-        hostname: "avatars.githubusercontent.com", // GitHub avatars
+        hostname: "avatars.githubusercontent.com",
       },
       {
         protocol: "https",
-        hostname: "avatar.vercel.sh", // Vercel avatars
+        hostname: "avatar.vercel.sh",
       },
       {
         protocol: "https",
-        hostname: "randomuser.me", // Random user images
+        hostname: "randomuser.me",
       },
       {
         protocol: "https",
-        hostname: "01mglxi4x0.ufs.sh" // Uploadthing CDN
+        hostname: "*.ufs.sh" // Wildcard for all ufs.sh subdomains
       }
     ],
   },
