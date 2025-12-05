@@ -5,9 +5,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { orpc } from "../../../../../../../../lib/orpc";
+import { toast } from "sonner";
 
 export default function InviteMember() {
 
@@ -21,8 +24,21 @@ export default function InviteMember() {
         }
     });
 
+    const inviteMutation = useMutation(
+        orpc.workspace.member.invite.mutationOptions({
+            onSuccess: () => {
+                toast.success("Invitation sent successfully!");
+                form.reset();
+                setOpen(false);
+            },
+            onError: (error) => {
+                toast.error(error.message || "Failed to send invitation. Please try again.");
+            }
+        })
+    )
+
     function onSubmit(values: InviteMembersSchemaType) {
-        console.log(values);
+        inviteMutation.mutate(values);
 
     }
 
