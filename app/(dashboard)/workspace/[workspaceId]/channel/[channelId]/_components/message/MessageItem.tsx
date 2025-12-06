@@ -1,18 +1,36 @@
 import Image from "next/image";
-import { Message } from "@/lib/generated/prisma";
 import { getAvatar } from "@/lib/get-avatar";
 import { SafeContent } from "@/components/rich-text-editor/SafeContent";
 import { MessageHoverToolbar } from "../toolbar";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { EditMessage } from "../toolbar/EditMessage";
+import { MessagelistItem } from "@/lib/type";
+import { MessagesSquare } from "lucide-react";
+import { useThread } from "@/providers/ThreadProvider";
+import { orpc } from "../../../../../../../../lib/orpc";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface iAppProps {
-  message: Message;
-  currentUserId:string;
+  message: MessagelistItem;
+  currentUserId: string;
 }
 
 export function MessageItem({ message, currentUserId }: iAppProps) {
+
+  const queryClient = useQueryClient();
+
   const [isEditing, setIsEditing] = useState(false);
+  const { openThread } = useThread();
+
+  const prefetchThread = useCallback(() => {
+    const options = orpc.message.thread.list.queryOptions({
+      input: {
+        messageId: message.id,
+      },
+    });
+
+    queryClient.prefetchQuery({...options,staleTime:60_000 }).catch((e) => {});
+  }, [message.id, queryClient]);
 
   return (
     <div className="flex space-x-3 relative p-2 rounded-lg group hover:bg-muted/50">
@@ -43,7 +61,11 @@ export function MessageItem({ message, currentUserId }: iAppProps) {
         </div>
 
         {isEditing ? (
-          <EditMessage message={message} onCancel={()=> setIsEditing(false)} onSave={()=> setIsEditing(false)}/>
+          <EditMessage
+            message={message}
+            onCancel={() => setIsEditing(false)}
+            onSave={() => setIsEditing(false)}
+          />
         ) : (
           <>
             <SafeContent
@@ -62,11 +84,33 @@ export function MessageItem({ message, currentUserId }: iAppProps) {
                 />
               </div>
             )}
+
+            {message.repliesCount > 0 && (
+              <button
+                onClick={() => openThread(message.id)}
+                onMouseEnter={prefetchThread}
+                type="button"
+                className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border cursor-pointer"
+              >
+                <MessagesSquare className="size-3.5" />
+                <span>
+                  {message.repliesCount}
+                  {message.repliesCount === 1 ? " reply" : " replies"}
+                </span>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+                  View Thread
+                </span>
+              </button>
+            )}
           </>
         )}
       </div>
 
-      <MessageHoverToolbar messageId={message.id} canEdit={message.authorId === currentUserId} onEdit={() => setIsEditing(true)}/>
+      <MessageHoverToolbar
+        messageId={message.id}
+        canEdit={message.authorId === currentUserId}
+        onEdit={() => setIsEditing(true)}
+      />
     </div>
   );
 }
