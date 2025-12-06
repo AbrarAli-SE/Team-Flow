@@ -13,7 +13,6 @@ import { useAttachmentUpload } from "@/hooks/use-attachment-upload";
 import { Message } from "@/lib/generated/prisma";
 import { KindeUser } from "@kinde-oss/kinde-auth-nextjs";
 import { getAvatar } from "@/lib/get-avatar";
-import page from "../../page";
 
 interface iAppProps {
     channelId: string;

@@ -31,7 +31,7 @@ export function RichTextEditor({ field, sendButton, footerLeft }: iAppProps) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none min-h-[125px] focus:outline-none dark:prose-invert p-4",
+          "prose prose-sm max-w-none min-h-[125px] focus:outline-none dark:prose-invert marker:text-primary p-4",
       },
     },
   });

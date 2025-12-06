@@ -4,6 +4,7 @@ export const createMessageSchema = z.object({
   channelId: z.string(),
   content: z.string().min(1).max(5000),
   imageUrl:z.url().optional(),
+  threadId:z.string().optional(),
 });
 
 export type CreateMessageSchemaType = z.infer<typeof createMessageSchema>;

@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
+      url      = env("DATABASE_URL")  // Add this line
 }
 
 model Channel {
@@ -41,4 +41,9 @@ model Message {
     authorAvatar String
     Channel Channel? @relation(fields: [channelId], references: [id])
     channelId String?
+
+    // Thread relation
+    parentMessage Message? @relation("MessageThread", fields: [threadId], references: [id], onDelete: Cascade)
+    threadId String?
+    replies Message[] @relation("MessageThread")
 }

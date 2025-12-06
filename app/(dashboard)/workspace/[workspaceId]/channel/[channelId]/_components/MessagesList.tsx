@@ -165,7 +165,7 @@ export function MessagesList() {
     const element = scrollRef.current;
     if (!element) return;
 
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
 
     setIsAtBottom(true);
   }
