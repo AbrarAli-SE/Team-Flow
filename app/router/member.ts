@@ -9,7 +9,7 @@ import { init, organization_user, Organizations, Users } from "@kinde/management
 import { getAvatar } from "../../lib/get-avatar";
 import { readSecurityMiddleware } from "../middlewares/arcjet/read";
 
-export const inviteMemer = base
+export const inviteMember = base
 .use(requiredAuthMiddleware)
 .use(requiredWorkspaceMiddleware)
 .use(standardSecuritymiddleare)
