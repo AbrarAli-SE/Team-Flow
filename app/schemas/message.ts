@@ -7,12 +7,23 @@ export const createMessageSchema = z.object({
   threadId:z.string().optional(),
 });
 
-export type CreateMessageSchemaType = z.infer<typeof createMessageSchema>;
-
 export const updateMessageSchema = z.object({
   messageId: z.string(),
   content: z.string().min(1).max(5000),
 });
 
+export const toggleReactionSchema = z.object({
+  messageId: z.string(),
+  emoji: z.string(),
+});
 
+export const GroupedReactionsSchema = z.object({
+  emoji: z.string(),
+  count: z.number(),
+  reactedByMe: z.boolean(),
+});
+
+
+export type CreateMessageSchemaType = z.infer<typeof createMessageSchema>;
 export type UpdateMessageSchemaType = z.infer<typeof updateMessageSchema>;
+export type GroupReactionsSchemaType = z.infer<typeof GroupedReactionsSchema>;

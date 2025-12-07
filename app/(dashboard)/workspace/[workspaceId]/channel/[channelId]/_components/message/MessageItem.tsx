@@ -4,14 +4,15 @@ import { SafeContent } from "@/components/rich-text-editor/SafeContent";
 import { MessageHoverToolbar } from "../toolbar";
 import { useCallback, useState } from "react";
 import { EditMessage } from "../toolbar/EditMessage";
-import { MessagelistItem } from "@/lib/type";
+import { MessageListItem } from "@/lib/type";
 import { MessagesSquare } from "lucide-react";
 import { useThread } from "@/providers/ThreadProvider";
 import { orpc } from "../../../../../../../../lib/orpc";
 import { useQueryClient } from "@tanstack/react-query";
+import { ReactionsBar } from "../reactions/ReactionsBar";
 
 interface iAppProps {
-  message: MessagelistItem;
+  message: MessageListItem;
   currentUserId: string;
 }
 
@@ -85,7 +86,14 @@ export function MessageItem({ message, currentUserId }: iAppProps) {
               </div>
             )}
 
-            {message.repliesCount > 0 && (
+            <ReactionsBar 
+            messageId={message.id} 
+            reactions={message.reactions}
+            context={{type: "list", channelId: message.channelId!}}
+            
+            />
+  
+            {message.replyCount > 0 && (
               <button
                 onClick={() => openThread(message.id)}
                 onMouseEnter={prefetchThread}
@@ -94,8 +102,8 @@ export function MessageItem({ message, currentUserId }: iAppProps) {
               >
                 <MessagesSquare className="size-3.5" />
                 <span>
-                  {message.repliesCount}
-                  {message.repliesCount === 1 ? " reply" : " replies"}
+                  {message.replyCount}
+                  {message.replyCount === 1 ? " reply" : " replies"}
                 </span>
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-xs">
                   View Thread
