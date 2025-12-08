@@ -22,6 +22,7 @@ import {
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 import { Spinner } from "../../../../../../../../components/ui/spinner";
+import { useChannelRealtime } from "../../../../../../../../providers/ChannelRealtimeProvider";
 
 interface EditMessageProps {
   message: Message;
@@ -31,6 +32,9 @@ interface EditMessageProps {
 
 export function EditMessage({ message, onCancel, onSave }: EditMessageProps) {
   const queryClient = useQueryClient();
+
+  const {send} = useChannelRealtime();
+
   const form = useForm({
     resolver: zodResolver(updateMessageSchema),
     defaultValues: {
@@ -72,6 +76,16 @@ export function EditMessage({ message, onCancel, onSave }: EditMessageProps) {
           }
         );
         toast.success("Message updated successfully.");
+
+        send({
+          type: "message:updated",
+          payload: {
+            message: {
+              ...updated.message,
+              channelId: updated.message.channelId ?? "",
+            },
+          },
+        });
         onSave();
       },
       onError: (error) => {

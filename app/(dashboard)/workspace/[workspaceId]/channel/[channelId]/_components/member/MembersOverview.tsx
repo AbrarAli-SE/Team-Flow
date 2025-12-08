@@ -3,7 +3,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,9 @@ import { useQuery } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { MemberItem } from "./MemberItem";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePresence } from "../../../../../../../../hooks/use-presence";
+import { useParams } from "next/navigation";
+import { User } from "../../../../../../../schemas/realtime";
 
 export function MemberOverview() {
   const [open, setOpen] = useState(false);
@@ -21,10 +24,32 @@ export function MemberOverview() {
     orpc.workspace.member.list.queryOptions()
   );
 
-  if(error) {
-    return (<p className="text-sm text-red-500">{error.message ||"Failed to load members."}</p>
-    )
-  }
+  const { data: workspaceData } = useQuery(orpc.workspace.list.queryOptions());
+
+  const currentUser = useMemo(() => {
+    if (!workspaceData?.user) return null;
+
+    return {
+      id: workspaceData.user.id,
+      full_name: workspaceData.user.given_name,
+      email: workspaceData.user.email,
+      picture: workspaceData.user.picture,
+    } satisfies User;
+  }, [workspaceData?.user]);
+
+  const params = useParams();
+
+  const workspaceId = params.workspaceId;
+
+  const { onlineUsers } = usePresence({
+    room: `workspace-${workspaceId}`,
+    currentUser: currentUser,
+  });
+
+  const onlineUserIds = useMemo(
+    () => new Set(onlineUsers.map((user) => user.id)),
+    [onlineUsers]
+  );
 
   const members = data ?? [];
 
@@ -39,6 +64,15 @@ export function MemberOverview() {
       })
     : members;
 
+  if (error) {
+    return (
+      <p className="text-sm text-red-500">
+        {error.message || "Failed to load members."}
+      </p>
+    );
+  }
+
+  
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -76,7 +110,7 @@ export function MemberOverview() {
             {isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="flex items-center gap-3 px-4 py-2">
-                  <Skeleton className="size-8 rounded-full"/>
+                  <Skeleton className="size-8 rounded-full" />
                   <div className="flex-1">
                     <Skeleton className="h-4 w-full rounded-md" />
                     <Skeleton className="h-3 w-3/4 rounded-md mt-1" />
@@ -89,7 +123,7 @@ export function MemberOverview() {
               </p>
             ) : (
               filteredMembers.map((member) => (
-                <MemberItem key={member.id} member={member} />
+                <MemberItem key={member.id} member={member} isOnline={member.id ? onlineUserIds.has(member.id) : false} />
               ))
             )}
           </div>
@@ -98,3 +132,4 @@ export function MemberOverview() {
     </Popover>
   );
 }
+
