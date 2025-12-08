@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
+import { ComposeAssistant } from "./compose-assistant";
+import { markdownToJSON } from "@/lib/markdown-to-json";
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -26,7 +28,7 @@ interface MenuBarProps {
 export function MenuBar({ editor }: MenuBarProps) {
   const editorState = useEditorState({
     editor,
-    selector: ({ editor }) => {
+    selector: ({ editor }: { editor: Editor | null }) => {
       if (!editor) return null;
       return {
         isActive: {
@@ -39,9 +41,19 @@ export function MenuBar({ editor }: MenuBarProps) {
         },
         canUndo: editor.can().undo(),
         canRedo: editor.can().redo(),
+        currentContent: editor.getJSON(),
       };
     },
   });
+
+  function handleAcceptCompose(markdown: string) {
+    try {
+      const json = markdownToJSON(markdown);
+      editor?.commands.setContent(json);
+    } catch {
+      console.log("something went wrong");
+    }
+  }
 
   if (!editor) {
     return null;
@@ -195,6 +207,15 @@ export function MenuBar({ editor }: MenuBarProps) {
             </TooltipTrigger>
             <TooltipContent>Redo</TooltipContent>
           </Tooltip>
+        </div>
+
+        <div className="h-6 w-px bg-border" />
+
+        <div className="flex flex-wrap gap-1">
+          <ComposeAssistant
+            content={JSON.stringify(editorState?.currentContent)}
+            onAccept={handleAcceptCompose}
+          />
         </div>
       </TooltipProvider>
     </div>

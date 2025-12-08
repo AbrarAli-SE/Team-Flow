@@ -22,7 +22,13 @@ export const heavyWriteSecurityMiddleware = base
     });
 
     if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
+        if (decision.reason.isSensitiveInfo()) {
+            throw errors.BAD_REQUEST({
+                message: "Sensitive information detected. Please remove PII (example: credit card data, phone numbers).",
+            });
+        }
+
+        if (decision.reason.isRateLimit()) {
         throw errors.RATE_LIMITED({
           message: "Too many write requests. Please slow down.",
         });
