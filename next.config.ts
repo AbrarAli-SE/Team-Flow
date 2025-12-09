@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+/* @ts-ignore */ 
+import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -24,6 +27,13 @@ const nextConfig: NextConfig = {
         hostname: "*.ufs.sh" // Wildcard for all ufs.sh subdomains
       }
     ],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()]
+    }
+
+    return config
   },
 };
 
