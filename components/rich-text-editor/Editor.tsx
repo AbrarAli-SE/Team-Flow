@@ -7,7 +7,7 @@ import type { ControllerRenderProps, FieldValues } from "react-hook-form";
 import { ReactNode } from "react";
 
 interface RichTextEditorProps {
-  field: ControllerRenderProps<FieldValues, string>;
+  field: Partial<ControllerRenderProps<FieldValues, string>> | { value: string; onChange: (next: string) => void };
   sendButton: ReactNode;
   footerLeft?: ReactNode;
 }
