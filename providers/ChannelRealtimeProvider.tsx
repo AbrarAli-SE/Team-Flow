@@ -29,7 +29,7 @@ export function ChannelRealtimeProvider({
   const queryClient = useQueryClient();
 
   const socket = usePartySocket({
-    host: "127.0.0.1:8787",
+    host: "https://team-flow-chat-saad-realtime.abrarali-se.workers.dev",
     room: `channel-${channelId}`,
     party: "chat",
     onMessage(event) {

@@ -22,7 +22,7 @@ export function ThreadRealtimeProvider({ children, threadId }: ThreadRealtimePro
     const queryClient = useQueryClient();
 
     const socket = usePartySocket({
-        host: process.env.NEXT_PUBLIC_PARTYKIT_HOST!,
+        host: 'https://team-flow-chat-saad-realtime.abrarali-se.workers.dev',
         room: `thread-${threadId}`,
         party: "chat",
         onMessage(e) {
