@@ -1,6 +1,12 @@
 // index.ts
 
-import { ChannelEventSchema, PresenceMessageSchema, ThreadEventSchema, UserSchema } from "../app/schemas/realtime";
+import {
+  ChannelEventSchema,
+  PresenceMessageSchema,
+  ThreadEventSchema,
+  UserSchema,
+} from "../app/schemas/realtime";
+import type { User } from "../app/schemas/realtime";
 import { Connection, routePartykitRequest, Server } from "partyserver";
 import { z } from "zod";
 
@@ -50,7 +56,6 @@ export class Chat extends Server {
         const data = presence.data;
 
         if (data.type === "add-user") {
-          // Save the user's presence state
           this.setConnectionState(connection, { user: data.payload });
           this.updateUsers();
           return;
@@ -65,24 +70,18 @@ export class Chat extends Server {
 
       const channelEvent = ChannelEventSchema.safeParse(parsed);
 
-      if(channelEvent.success) {
+      if (channelEvent.success) {
         const payload = JSON.stringify(channelEvent.data);
-
         this.broadcast(payload, [connection.id]);
         return;
       }
-
-      // thread events
 
       const threadsEvents = ThreadEventSchema.safeParse(parsed);
-      if(threadsEvents.success) {
-        const payload = JSON.stringify(threadsEvents.data); 
-
+      if (threadsEvents.success) {
+        const payload = JSON.stringify(threadsEvents.data);
         this.broadcast(payload, [connection.id]);
         return;
       }
-
-
     } catch (err) {
       console.log("Failed to process message:", err);
     }
@@ -94,7 +93,6 @@ export class Chat extends Server {
     this.broadcast(message);
   }
 
-  // Construct the presence payload
   getPresenceMessage(): Message {
     return {
       type: "presence",
@@ -102,9 +100,9 @@ export class Chat extends Server {
     };
   }
 
-  // Gather users from all active connections
-  getUsers() {
-    const users = new Map<string, any>();
+  // Gather all active users
+  getUsers(): User[] {
+    const users = new Map<string, User>();
 
     for (const connection of this.getConnections()) {
       const state = this.getConnectionState(connection);
@@ -123,12 +121,7 @@ export class Chat extends Server {
 
   private getConnectionState(connection: Connection): ConnectionState {
     const result = ConnectionStateSchema.safeParse(connection.state);
-
-    if (result.success) {
-      return result.data;
-    }
-
-    return null;
+    return result.success ? result.data : null;
   }
 }
 

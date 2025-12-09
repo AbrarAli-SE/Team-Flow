@@ -3,7 +3,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ import { User } from "../../../../../../../schemas/realtime";
 
 export function MemberOverview() {
   const [open, setOpen] = useState(false);
-
   const [search, setSearch] = useState("");
 
   const { data, isLoading, error } = useQuery(
@@ -26,19 +25,17 @@ export function MemberOverview() {
 
   const { data: workspaceData } = useQuery(orpc.workspace.list.queryOptions());
 
-  const currentUser = useMemo(() => {
-    if (!workspaceData?.user) return null;
-
-    return {
-      id: workspaceData.user.id,
-      full_name: workspaceData.user.given_name,
-      email: workspaceData.user.email,
-      picture: workspaceData.user.picture,
-    } satisfies User;
-  }, [workspaceData?.user]);
+  // ✅ FIX: removed useMemo (React Compiler-safe)
+  const currentUser: User | null = workspaceData?.user
+    ? {
+        id: workspaceData.user.id,
+        full_name: workspaceData.user.given_name,
+        email: workspaceData.user.email,
+        picture: workspaceData.user.picture,
+      }
+    : null;
 
   const params = useParams();
-
   const workspaceId = params.workspaceId;
 
   const { onlineUsers } = usePresence({
@@ -46,20 +43,15 @@ export function MemberOverview() {
     currentUser: currentUser,
   });
 
-  const onlineUserIds = useMemo(
-    () => new Set(onlineUsers.map((user) => user.id)),
-    [onlineUsers]
-  );
+  const onlineUserIds = new Set(onlineUsers.map((user) => user.id));
 
   const members = data ?? [];
-
   const query = search.trim().toLowerCase();
 
   const filteredMembers = query
     ? members.filter((member) => {
         const name = member.full_name?.toLowerCase();
         const email = member.email?.toLowerCase();
-
         return name?.includes(query) || email?.includes(query);
       })
     : members;
@@ -72,7 +64,6 @@ export function MemberOverview() {
     );
   }
 
-  
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -81,17 +72,16 @@ export function MemberOverview() {
           <span>Members</span>
         </Button>
       </PopoverTrigger>
+
       <PopoverContent align="end" className="p-0 w-[300px]">
         <div className="p-0">
-          {/* header */}
-
+          {/* Header */}
           <div className="px-4 py-3 border-b">
             <h3 className="font-semibold text-sm">Workspace Members</h3>
             <p className="text-xs text-muted-foreground">Members</p>
           </div>
 
-          {/* Search  */}
-
+          {/* Search */}
           <div className="p-3 border-b">
             <div className="relative">
               <Search className="size-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
@@ -105,7 +95,6 @@ export function MemberOverview() {
           </div>
 
           {/* Members List */}
-
           <div className="max-h-80 overflow-y-auto">
             {isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
@@ -123,7 +112,11 @@ export function MemberOverview() {
               </p>
             ) : (
               filteredMembers.map((member) => (
-                <MemberItem key={member.id} member={member} isOnline={member.id ? onlineUserIds.has(member.id) : false} />
+                <MemberItem
+                  key={member.id}
+                  member={member}
+                  isOnline={member.id ? onlineUserIds.has(member.id) : false}
+                />
               ))
             )}
           </div>
@@ -132,4 +125,3 @@ export function MemberOverview() {
     </Popover>
   );
 }
-

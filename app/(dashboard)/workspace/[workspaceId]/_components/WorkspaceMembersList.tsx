@@ -7,48 +7,41 @@ import { orpc } from "@/lib/orpc";
 import { getAvatar } from "@/lib/get-avatar";
 import { usePresence } from "../../../../../hooks/use-presence";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
 import { User } from "../../../../schemas/realtime";
 import { cn } from "../../../../../lib/utils";
 
-
 export function WorkspaceMembersList() {
-
   const { data: { members } } = useSuspenseQuery(orpc.channel.list.queryOptions());
 
-  const {data: workspaceData} = useQuery(orpc.workspace.list.queryOptions());
+  const { data: workspaceData } = useQuery(orpc.workspace.list.queryOptions());
 
-  const currentUser = useMemo(() => {
-    if(!workspaceData?.user) return null;
+  // ✅ FIX: Remove useMemo — React Query data is already stable
+  const currentUser: User | null = workspaceData?.user
+    ? {
+        id: workspaceData.user.id,
+        full_name: workspaceData.user.given_name,
+        email: workspaceData.user.email,
+        picture: workspaceData.user.picture,
+      }
+    : null;
 
-    return {
-      id: workspaceData.user.id,
-      full_name: workspaceData.user.given_name,
-      email: workspaceData.user.email,
-      picture: workspaceData.user.picture,
-    } satisfies User;
-
-
-  }, [workspaceData?.user]);
-
-  const params = useParams()
-
+  const params = useParams();
   const workspaceId = params.workspaceId;
 
-  const {onlineUsers} = usePresence({
-    room:`workspace-${workspaceId}`,
+  const { onlineUsers } = usePresence({
+    room: `workspace-${workspaceId}`,
     currentUser: currentUser,
-  })
+  });
 
-  const onlineUserIds = useMemo(
-    () => new Set(onlineUsers.map((user) => user.id)),
-    [onlineUsers]
-);
+  const onlineUserIds = new Set(onlineUsers.map((user) => user.id)); // still cheap, no memo needed
 
   return (
     <div className="space-y-0.5 py-1">
       {members.map((member) => (
-        <div key={member.id} className="px-3 py-2 hover:bg-accent cursor-pointer transition-colors flex items-center space-x-3">
+        <div
+          key={member.id}
+          className="px-3 py-2 hover:bg-accent cursor-pointer transition-colors flex items-center space-x-3"
+        >
           <div className="relative">
             <Avatar className="size-8 relative">
               <Image
@@ -62,19 +55,20 @@ export function WorkspaceMembersList() {
               </AvatarFallback>
             </Avatar>
 
-
-          {/* online / offline indicators */}
-
-          <div className= {cn(
-            "absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background bg-violet-500",
-            member.id && onlineUserIds.has(member.id) ? "bg-green-500" : "bg-gray-400"
-          )}></div>
-
-
+            {/* online / offline indicators */}
+            <div
+              className={cn(
+                "absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background",
+                onlineUserIds.has(member.id ?? "") ? "bg-green-500" : "bg-gray-400"
+              )}
+            ></div>
           </div>
+
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{member.full_name}</p>
-            <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {member.email}
+            </p>
           </div>
         </div>
       ))}

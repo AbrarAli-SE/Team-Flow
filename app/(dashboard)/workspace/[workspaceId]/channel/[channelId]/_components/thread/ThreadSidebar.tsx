@@ -9,7 +9,7 @@ import { orpc } from "@/lib/orpc";
 import { SafeContent } from "@/components/rich-text-editor/SafeContent";
 import { KindeUser } from "@kinde-oss/kinde-auth-nextjs";
 import { ThreadSidebarSkeleton } from "./ThreadSidebarSkeleton";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, startTransition } from "react";
 import { SummarizeThread } from "./SummarizeThread";
 import { ThreadRealtimeProvider } from "@/providers/ThreadRealtimeProvider";
 
@@ -40,10 +40,12 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
 
   const handleScroll = () => {
     const element = scrollRef.current;
-
     if (!element) return;
 
-    setIsAtBottom(isNearBottom(element));
+    // FIX: Wrap in transition
+    startTransition(() => {
+      setIsAtBottom(isNearBottom(element));
+    });
   };
 
   useEffect(() => {
@@ -51,6 +53,7 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
 
     const prevMessageCount = lastMessageCountRef.current;
     const element = scrollRef.current;
+
     if (prevMessageCount > 0 && messageCount !== prevMessageCount) {
       if (element && isNearBottom(element)) {
         requestAnimationFrame(() => {
@@ -60,7 +63,10 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
           });
         });
 
-        setIsAtBottom(true);
+        // FIX: Wrap in transition
+        startTransition(() => {
+          setIsAtBottom(true);
+        });
       }
     }
 
@@ -84,11 +90,13 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
         scrollToBottomIfNeeded();
       }
     };
+
     element.addEventListener("load", onImageLoad, true);
 
     const resizeObserver = new ResizeObserver(() => {
       scrollToBottomIfNeeded();
     });
+
     resizeObserver.observe(element);
 
     const mutationObserver = new MutationObserver(() => {
@@ -101,6 +109,7 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
       attributes: true,
       characterData: true,
     });
+
     return () => {
       resizeObserver.disconnect();
       element.removeEventListener("load", onImageLoad, true);
@@ -114,7 +123,10 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
 
     bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
 
-    setIsAtBottom(true);
+    // FIX: Wrap in transition
+    startTransition(() => {
+      setIsAtBottom(true);
+    });
   };
 
   if (isLoading) {
@@ -125,7 +137,6 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
     <ThreadRealtimeProvider threadId={selectedThreadId!}>
       <div className="w-120 border-l flex flex-col h-full">
         {/* header */}
-
         <div className="border-b h-14 px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="size-4" />
@@ -203,7 +214,7 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
             )}
           </div>
 
-          {/* {scroll to bottom button} */}
+          {/* scroll to bottom button */}
           {!isAtBottom && (
             <Button
               type="button"
@@ -216,7 +227,6 @@ export function ThreadSidebar({ user }: ThreadSidebarProps) {
           )}
         </div>
 
-        {/* {thread reply form} */}
         <div className="border-t p-4">
           <ThreadReplyForm threadId={selectedThreadId!} user={user} />
         </div>

@@ -1,7 +1,6 @@
-import "@/lib/orpc.server"; // Ensure server-side ORPC client is registered for prerederendering
+import "@/lib/orpc.server"; // Ensure server-side ORPC client is registered for prerendering
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// @ts-ignore
 import "./globals.css";
 import { ThemeProvider } from "../lib/theme-provider";
 import { AuthProvider } from "../components/ui/AuthProvider";
@@ -29,9 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <>
-      <AuthProvider>
-        <html lang="en" suppressHydrationWarning>
+    <AuthProvider>
+      <html lang="en" suppressHydrationWarning>
         <head />
         <body>
           <ThemeProvider
@@ -40,14 +38,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Providers>
-            {children}
-            </Providers>
-            <Toaster closeButton position="top-center" richColors/>
+            <Providers>{children}</Providers>
+            <Toaster closeButton position="top-center" richColors />
           </ThemeProvider>
         </body>
       </html>
-      </AuthProvider>
-    </>
+    </AuthProvider>
   );
 }

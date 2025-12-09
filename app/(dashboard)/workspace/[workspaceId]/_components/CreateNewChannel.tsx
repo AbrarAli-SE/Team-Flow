@@ -8,12 +8,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { use, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChannelNameSchema, ChannelNameSchemaType, transformChannelName } from "@/app/schemas/channel";
+import {
+  ChannelNameSchema,
+  ChannelNameSchemaType,
+  transformChannelName,
+} from "@/app/schemas/channel";
 import {
   Form,
   FormControl,
@@ -35,26 +39,40 @@ export function CreateNewChannel() {
 
   const queryClient = useQueryClient();
   const router = useRouter();
-  const {workspaceId} = useParams<{ workspaceId: string }>();
+  const { workspaceId } = useParams<{ workspaceId: string }>();
 
-  const form = useForm({
+  const form = useForm<ChannelNameSchemaType>({
     resolver: zodResolver(ChannelNameSchema),
     defaultValues: {
       name: "",
     },
   });
 
+  // ✅ FIX: useWatch instead of form.watch()
+  const watchname = useWatch({
+    control: form.control,
+    name: "name",
+  });
+
+  const transformedName = watchname
+    ? transformChannelName(watchname)
+    : "";
+
   const createChannelMutation = useMutation(
     orpc.channel.create.mutationOptions({
       onSuccess: (newChannel) => {
         toast.success(`Channel "${newChannel.name}" created successfully!`);
 
-        queryClient.invalidateQueries({ queryKey: orpc.channel.list.queryKey() });
+        queryClient.invalidateQueries({
+          queryKey: orpc.channel.list.queryKey(),
+        });
 
         form.reset();
         setOpen(false);
 
-        router.push(`/workspace/${workspaceId}/channel/${newChannel.id}`);
+        router.push(
+          `/workspace/${workspaceId}/channel/${newChannel.id}`
+        );
       },
       onError: (error) => {
         if (isDefinedError(error)) {
@@ -68,11 +86,8 @@ export function CreateNewChannel() {
   );
 
   function onSubmit(values: ChannelNameSchemaType) {
-    createChannelMutation.mutate(values)
+    createChannelMutation.mutate(values);
   }
-
-  const watchname = form.watch("name");
-  const transformedName = watchname ? transformChannelName(watchname) : "";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -82,6 +97,7 @@ export function CreateNewChannel() {
           Add Channel
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create Channel</DialogTitle>
@@ -101,6 +117,8 @@ export function CreateNewChannel() {
                   <FormControl>
                     <Input placeholder="My Channel" {...field} />
                   </FormControl>
+
+                  {/* Show transformed name */}
                   {transformedName && transformedName !== watchname && (
                     <p className="text-sm text-muted-foreground">
                       Will be created as:{" "}
@@ -109,15 +127,21 @@ export function CreateNewChannel() {
                       </code>
                     </p>
                   )}
+
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <Button disabled={createChannelMutation.isPending} type="submit">
-              {createChannelMutation.isPending
-                ? <><Spinner /> Creating...</>
-                : "Create new Channel"}
-              </Button>
+              {createChannelMutation.isPending ? (
+                <>
+                  <Spinner /> Creating...
+                </>
+              ) : (
+                "Create new Channel"
+              )}
+            </Button>
           </form>
         </Form>
       </DialogContent>

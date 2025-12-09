@@ -1,8 +1,9 @@
 {
+    "$schema": "./node_modules/wrangler/config-schema.json",
     "name": "team-flow-chat-saad-realtime",
     "main": "realtime/index.ts",
     "compatibility_date": "2025-11-08",
-    "durable_objects":{
+    "durable_objects": {
         "bindings": [
             {
                 "name": "Chat",
@@ -10,5 +11,20 @@
             }
         ]
     },
-    "migrations":[{ "tag": "v1", "new_sqlite_classes": ["Chat"]}]
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": [
+                "Chat"
+            ]
+        }
+    ],
+    "observability": {
+        "logs": {
+            "enabled": false,
+            "head_sampling_rate": 1,
+            "invocation_logs": true,
+            "persist": true
+        }
+    }
 }
