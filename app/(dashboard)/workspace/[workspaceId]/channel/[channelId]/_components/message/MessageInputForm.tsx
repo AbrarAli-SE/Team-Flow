@@ -66,6 +66,7 @@ export function MessageInputForm({ channelId, user }: iAppProps) {
                     authorname: user.given_name ?? "Unknown",
                     authorAvatar: getAvatar(user.picture, user.email!),
                     channelId: channelId,
+                    threadId: null,
                 };
                 queryClient.setQueryData<InfiniteMessages>(["messages.list", channelId], (old) => {
                     if (!old) {

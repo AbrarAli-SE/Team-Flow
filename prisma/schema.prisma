@@ -51,6 +51,7 @@ model Message {
 }
 
 model MessageReaction {
+    
     id String @id @default(uuid())
 
     emoji String
